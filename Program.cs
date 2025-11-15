@@ -6,6 +6,14 @@ using AutocompleteApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp",
+        policy => policy.WithOrigins("http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -53,6 +61,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();

@@ -2,7 +2,7 @@ using AutocompleteApi.Constants;
 
 namespace AutocompleteApi.Models;
 
-public abstract class AutocompleteResult
+public class AutocompleteResult
 {
     public string Type { get; set; } = string.Empty;
 }
