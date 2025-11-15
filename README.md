@@ -44,9 +44,3 @@ UI runs at: `http://localhost:3000`
 - **Automatic Migration**: Database migration runs automatically on application startup.
 - **Idempotent**: Checks if data already exists before migrating to avoid duplicate data.
 - **Indexes**: Creates indexes on `Ticker` and `Name` fields for optimal search performance.
-
-### Code Organization
-
-- **Constants**: All hardcoded strings (result types, collection names, etc.) are centralized in `AppConstants` for easy maintenance.
-- **DTO Pattern**: Uses `AutocompleteResult` DTO for clean API responses.
-- **Error Handling**: Basic error handling in controller with logging.
