@@ -27,7 +27,7 @@ public class AutocompleteController : ControllerBase
 
         try
         {
-            List<AutocompleteResult> results = await _autocompleteService.SearchAsync(query);
+            var results = await _autocompleteService.SearchAsync(query);
             return Ok(results);
         }
         catch (Exception ex)

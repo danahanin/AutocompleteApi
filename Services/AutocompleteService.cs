@@ -20,22 +20,22 @@ public class AutocompleteService : IAutocompleteService
         _logger = logger;
     }
 
-    public async Task<List<AutocompleteResult>> SearchAsync(string query)
+    public async Task<List<object>> SearchAsync(string query)
     {
         var normalizedQuery = query.Trim();
-        var allResults = new List<(AutocompleteResult Result, int Priority, string SortKey)>();
+        var allResults = new List<(object Result, int Priority, string SortKey)>();
 
         var allStocks = await _stockRepository.SearchByTickerOrNameAsync(normalizedQuery);
         var allExperts = await _expertRepository.SearchByNameAsync(normalizedQuery);
 
         allResults.AddRange(allStocks.Select(stock => {
-            var (result, priority) = MapStockToResult(stock, normalizedQuery);
-            return ((AutocompleteResult)result, priority, stock.Ticker);
+            var (result, priority, sortKey) = MapStockToResult(stock, normalizedQuery);
+            return ((object)result, priority, sortKey);
         }));
 
         allResults.AddRange(allExperts.Select(expert => {
-            var (result, priority) = MapExpertToResult(expert, normalizedQuery);
-            return ((AutocompleteResult)result, priority, expert.Name);
+            var (result, priority, sortKey) = MapExpertToResult(expert, normalizedQuery);
+            return ((object)result, priority, sortKey);
         }));
 
         return allResults
@@ -43,10 +43,10 @@ public class AutocompleteService : IAutocompleteService
             .ThenBy(x => x.SortKey)
             .Take(AppConstants.Search.MaxResults)
             .Select(x => x.Result)
-            .ToList();
+            .ToList<object>();
     }
 
-    private static (StockResult Result, int Priority) MapStockToResult(Stock stock, string query)
+    private static (StockResult Result, int Priority, string SortKey) MapStockToResult(Stock stock, string query)
     {
         var tickerExact = stock.Ticker.Equals(query, StringComparison.OrdinalIgnoreCase);
         var nameExact = stock.Name.Equals(query, StringComparison.OrdinalIgnoreCase);
@@ -54,16 +54,17 @@ public class AutocompleteService : IAutocompleteService
         var nameStartsWith = stock.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase);
 
         var priority = CalculatePriority(tickerExact, nameExact, tickerStartsWith, nameStartsWith);
+        var sortKey = (tickerExact || tickerStartsWith) ? stock.Ticker : stock.Name;
 
         return (new StockResult
         {
             Ticker = stock.Ticker,
             Name = stock.Name,
             MarketCap = stock.MarketCap
-        }, priority);
+        }, priority, sortKey);
     }
 
-    private static (ExpertResult Result, int Priority) MapExpertToResult(Expert expert, string query)
+    private static (ExpertResult Result, int Priority, string SortKey) MapExpertToResult(Expert expert, string query)
     {
         var nameExact = expert.Name.Equals(query, StringComparison.OrdinalIgnoreCase);
         var nameStartsWith = expert.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase);
@@ -74,7 +75,7 @@ public class AutocompleteService : IAutocompleteService
         {
             Name = expert.Name,
             ExpertType = expert.Type.ToLower()
-        }, priority);
+        }, priority, expert.Name);
     }
 
     private static int CalculatePriority(bool tickerExact, bool nameExact, bool tickerStartsWith, bool nameStartsWith)

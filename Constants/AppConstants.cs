@@ -14,12 +14,6 @@ public static class AppConstants
         public const string Experts = "Experts";
     }
 
-    public static class DataFiles
-    {
-        public const string StocksJson = "stocks.json";
-        public const string ExpertsJson = "experts.json";
-    }
-
     public static class Search
     {
         public const int MaxResults = 10;
