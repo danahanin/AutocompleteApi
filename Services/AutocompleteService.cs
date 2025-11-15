@@ -20,22 +20,22 @@ public class AutocompleteService : IAutocompleteService
         _logger = logger;
     }
 
-    public async Task<List<AutocompleteResult>> SearchAsync(string query)
+    public async Task<List<object>> SearchAsync(string query)
     {
         var normalizedQuery = query.Trim();
-        var allResults = new List<(AutocompleteResult Result, int Priority, string SortKey)>();
+        var allResults = new List<(object Result, int Priority, string SortKey)>();
 
         var allStocks = await _stockRepository.SearchByTickerOrNameAsync(normalizedQuery);
         var allExperts = await _expertRepository.SearchByNameAsync(normalizedQuery);
 
         allResults.AddRange(allStocks.Select(stock => {
             var (result, priority, sortKey) = MapStockToResult(stock, normalizedQuery);
-            return ((AutocompleteResult)result, priority, sortKey);
+            return ((object)result, priority, sortKey);
         }));
 
         allResults.AddRange(allExperts.Select(expert => {
             var (result, priority, sortKey) = MapExpertToResult(expert, normalizedQuery);
-            return ((AutocompleteResult)result, priority, sortKey);
+            return ((object)result, priority, sortKey);
         }));
 
         return allResults
@@ -43,7 +43,7 @@ public class AutocompleteService : IAutocompleteService
             .ThenBy(x => x.SortKey)
             .Take(AppConstants.Search.MaxResults)
             .Select(x => x.Result)
-            .ToList();
+            .ToList<object>();
     }
 
     private static (StockResult Result, int Priority, string SortKey) MapStockToResult(Stock stock, string query)
